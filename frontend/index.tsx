@@ -1,4 +1,4 @@
-import { callable, Millennium, constSysfsExpr } from '@steambrew/client';
+import { Millennium, IconsModule, definePlugin, Field, DialogButton } from '@steambrew/client';
 import { PluginSettings } from './settings';
 
 class classname {
@@ -7,21 +7,6 @@ class classname {
 		return 'method called';
 	}
 }
-
-const asset1 = constSysfsExpr('file1.txt', {
-	basePath: './assets',
-	encoding: 'utf8',
-});
-
-console.log('asset1', asset1); // file content
-
-const allAssets = constSysfsExpr({
-	basePath: './assets',
-	include: '*.txt',
-	encoding: 'utf8',
-});
-
-console.log('all assets', allAssets); // array of file contents
 
 // export classname class to global context
 Millennium.exposeObj({ classname });
@@ -34,16 +19,40 @@ function windowCreated(context: any) {
 }
 
 // Declare a function that exists on the backend
-const backendMethod = callable<[{ message: string; status: boolean; count: number }], boolean>('Backend.receive_frontend_message');
+// const backendMethod = callable<[{ message: string; status: boolean; count: number }], boolean>('Backend.receive_frontend_message');
 
-// Entry point on the front end of your plugin
-export default async function PluginMain() {
+const SettingsContent = () => {
+	return (
+		<Field label="Plugin Settings" description="This is a description of the plugin settings." icon={<IconsModule.Settings />} bottomSeparator="standard" focusable>
+			<DialogButton
+				onClick={() => {
+					console.log('Button clicked!');
+				}}
+			>
+				Click Me
+			</DialogButton>
+		</Field>
+	);
+};
+
+export default definePlugin(() => {
 	PluginSettings.numberTextInput += 1;
 	console.log(PluginSettings.numberTextInput);
 
 	// Call the backend method
-	const message = await backendMethod({ message: 'Hello World From Frontend!', status: true, count: 69 });
-	console.log('Result from callServerMethod:', message);
+	// backendMethod({
+	// 	message: 'Hello World From Frontend!',
+	// 	status: true,
+	// 	count: 69,
+	// }).then((message) => {
+	// 	console.log('Result from callServerMethod:', message);
+	// });
 
 	Millennium.AddWindowCreateHook(windowCreated);
-}
+
+	return {
+		title: 'My Plugin',
+		icon: <IconsModule.Settings />,
+		content: <SettingsContent />,
+	};
+});
