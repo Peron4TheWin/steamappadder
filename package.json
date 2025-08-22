@@ -12,16 +12,16 @@
 		"@types/webpack": "^5.28.5"
 	},
 	"type": "module",
-	"name": "millennium-plugin",
+	"name": "steam-app-adder",
 	"version": "1.0.0",
-	"description": "A template plugin for millennium",
+	"description": "A plugin to add steam apps with manifests",
 	"main": "./frontend/index.jsx",
 	"author": "Millennium",
 	"license": "MIT",
 	"dependencies": {
 		"@steambrew/api": "^5.2.4",
 		"@steambrew/webkit": "^5.3.3",
-		"@steambrew/client": "^5.3.2",
-		"@steambrew/ttc": "^2.5.3"
+		"@steambrew/client": "^4.2.1",
+		"@steambrew/ttc": "^1.2.2"
 	}
 }

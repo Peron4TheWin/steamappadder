@@ -1,5 +1,4 @@
 import { Millennium, IconsModule, definePlugin, Field, DialogButton } from '@steambrew/client';
-import { PluginSettings } from './settings';
 
 class classname {
 	static method(country: string, age: number) {
@@ -36,8 +35,6 @@ const SettingsContent = () => {
 };
 
 export default definePlugin(() => {
-	PluginSettings.numberTextInput += 1;
-	console.log(PluginSettings.numberTextInput);
 
 	// Call the backend method
 	// backendMethod({
