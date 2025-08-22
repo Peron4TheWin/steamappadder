@@ -6,7 +6,7 @@ import requests
 class Backend:
     @staticmethod 
     def receive_frontend_message(message: str):
-        logger.log(f"received: {[message]}")
+        logger.log(f"receivsed: {[message]}")
 
         return True
 
