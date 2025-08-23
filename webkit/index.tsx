@@ -8,7 +8,7 @@ export default async function WebkitMain() {
 		if (!location.href.startsWith("https://store.steampowered.com/app/")) return;
 
 		// avoid duplicates
-		if (document.getElementById("add-app-to-library-btn")) return;
+		//if (document.getElementById("add-app-to-library-btn")) return;
 
 		// create button
 		const btn = document.createElement("button");
@@ -24,9 +24,7 @@ export default async function WebkitMain() {
 		btn.addEventListener("click", async () => {
 			try {
 				const success = await receiveFrontendMethod({
-					message: window.location.href,
-					status: true,
-					count: 69,
+					message: window.location.href
 				});
 				console.log("Request finished:", success);
 			} catch (err) {
