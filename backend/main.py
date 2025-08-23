@@ -2,33 +2,37 @@ import Millennium, PluginUtils # type: ignore
 from logger import logger
 import time
 import requests
-import re, os, shutil, zipfile, subprocess
+import winreg
+import re, os, shutil, zipfile
 
 class Backend:
     @staticmethod 
     def receive_frontend_message(message: str):
         logger.log(f"received: {[message]}")
-        # extract app id
         try:
+            try:
+                steampath=(winreg.QueryValueEx(winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Valve\Steam"), "SteamPath")[0])
+                logger.log(steampath)
+            except FileNotFoundError:
+                logger.log("SteamPath not found")
+                return False
             m = re.search(r"store\.steampowered\.com/app/(\d+)/", message)
             if not m:
                 return False
             app_id = m.group(1)
             logger.log(f"app_id: {app_id}")
-            # prepare paths
-            tmp = r"C:\temp\steam_mods"
+            disk = (str(os.environ["SYSTEMDRIVE"]))
+            tmp = rf"{disk}\temp\steam_mods"
             os.makedirs(tmp, exist_ok=True)
             zip_url = f"https://raw.githubusercontent.com/sushi-dev55/sushitools-games-repo/refs/heads/main/{app_id}.zip"
             zip_path = os.path.join(tmp, f"{app_id}.zip")
             logger.log(f"1")
-            # check + download
             if requests.head(zip_url).status_code != 200:
                 logger.log(f"Game not found")
                 return False
             with requests.get(zip_url, stream=True) as r, open(zip_path, "wb") as f:
                 shutil.copyfileobj(r.raw, f)
             logger.log(f"2")
-            # extract and move .lua
             try:
                 with zipfile.ZipFile(zip_path) as z:
                     z.extractall(tmp)
@@ -36,10 +40,9 @@ class Backend:
                     for file in files:
                         if file.endswith(".lua"):
                             shutil.move(os.path.join(root, file),
-                                        os.path.join(r"C:\Program Files (x86)\Steam\config\stplug-in", file))
+                                        os.path.join(rf"{steampath}\config\stplug-in", file))
             except Exception as e:
                 logger.log(f"Exception: {e}")
-            # cleanup
             shutil.rmtree(tmp, ignore_errors=True)
             return True
         except Exception as e:
