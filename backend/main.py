@@ -41,13 +41,10 @@ class Backend:
                 logger.log(f"Exception: {e}")
             # cleanup
             shutil.rmtree(tmp, ignore_errors=True)
-
-            # restart steam
-            #subprocess.run("taskkill /f /im steam.exe", shell=True)
-            #subprocess.Popen(r'"C:\Program Files (x86)\Steam\Steam.exe"')
+            return True
         except Exception as e:
             logger.log(e)
-        return True
+        return False
 
 
 def get_steam_path():

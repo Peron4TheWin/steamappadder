@@ -26,9 +26,13 @@ export default async function WebkitMain() {
 				const success = await receiveFrontendMethod({
 					message: window.location.href
 				});
-				console.log("Request finished:", success);
+				console.log(success);
+				console.log(success.message);
+				console.log(success.count);
+				console.log(success.status);
+				alert("Successfully added the app");
 			} catch (err) {
-				console.error("Error:", err);
+				alert(err.response);
 			}
 		});
 
