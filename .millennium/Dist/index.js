@@ -52,35 +52,9 @@ function InitializePlugins() {
             MillenniumStore.ignoreProxyFlag = false;
         });
     }
-    async function WebkitInitializeIPC() {
-        let intervalId = null;
-        const maxWaitTime = 10000; // 10 seconds
-        intervalId = setInterval(() => {
-            if (typeof SteamClient === 'undefined') {
-                return;
-            }
-            if (intervalId) {
-                clearInterval(intervalId);
-                intervalId = null;
-            }
-            SteamClient.BrowserView?.RegisterForMessageFromParent((messageId, data) => {
-                if (messageId !== IPCMessageId) {
-                    return;
-                }
-                const payload = JSON.parse(data);
-                MillenniumStore.ignoreProxyFlag = true;
-                MillenniumStore.settingsStore[payload.name] = payload.value;
-                MillenniumStore.ignoreProxyFlag = false;
-            });
-        }, 100);
-        setTimeout(() => {
-            if (intervalId) {
-                clearInterval(intervalId);
-                console.warn('%c Millennium %c Failed to find SteamClient after 10000ms', 'background:rgb(37, 105, 184); color: white;', 'background: transparent;');
-            }
-        }, maxWaitTime);
+    if (isClientModule) {
+        ClientInitializeIPC();
     }
-    isClientModule ? ClientInitializeIPC() : WebkitInitializeIPC();
     const StartSettingPropagation = (name, value) => {
         if (MillenniumStore.ignoreProxyFlag) {
             return;
