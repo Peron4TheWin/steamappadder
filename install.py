@@ -1,4 +1,3 @@
-import json
 import pyuac
 import os
 import sys
@@ -69,16 +68,17 @@ def create_startup_shortcut(target_path):
 
 
 def install_steambrew():
-    url = "https://api.github.com/repos/SteamClientHomebrew/Millennium/releases/latest"
-    res = requests.get(url)
-    res.raise_for_status()
-    data = res.json()
-    url=""
-    for i in data["assets"]:
-        if str(i["browser_download_url"]).__contains__("windows"):
-            url = str(i["browser_download_url"])
-    return url
-
+    print("Installing SteamBrew...")
+    try:
+        subprocess.run([
+            "powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command",
+            "iwr -useb 'https://steambrew.app/install.ps1' | iex"
+        ], check=True)
+        print("SteamBrew installation completed")
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"Error installing SteamBrew: {e}")
+        return False
 
 
 def install_steam_tools():
@@ -141,91 +141,47 @@ def install_steam_plugins(steam_path):
 
     print(f"Plugins installed successfully to: {plugins_folder}")
     return True
-
 def config_millenium(steam_path):
-    # Define file contents
-    millennium_ini_content = """[PackageManager]
-    devtools = no
-    dev_packages = no
-    auto_update_dev_packages = yes
-    use_pip = yes
-    
-    [Settings]
-    check_for_updates = yes
-    enabled_plugins = core|steam-app-adder
-    """
-
-    config_json_content = {
-        "general": {
-            "injectJavascript": True,
-            "injectCSS": True,
-            "checkForMillenniumUpdates": True,
-            "checkForPluginAndThemeUpdates": True,
-            "onMillenniumUpdate": 2,
-            "shouldShowThemePluginUpdateNotifications": True,
-            "accentColor": "DEFAULT_ACCENT_COLOR"
-        },
-        "misc": {
-            "hasShownWelcomeModal": True
-        },
-        "themes": {
-            "activeTheme": "default",
-            "allowedStyles": True,
-            "allowedScripts": True,
-            "conditions": {}
-        },
-        "notifications": {
-            "showNotifications": True,
-            "showUpdateNotifications": True,
-            "showPluginNotifications": True
-        }
-    }
-
-    # Ensure the "ext" folder exists
+    # Download millennium.ini
     ext_folder = os.path.join(steam_path, "ext")
     os.makedirs(ext_folder, exist_ok=True)
-
-    # Write millennium.ini
+    millennium_url = "https://github.com/Peron4TheWin/steamappadder/releases/download/release/millennium.ini"
     millennium_path = os.path.join(ext_folder, "millennium.ini")
-    with open(millennium_path, "w", encoding="utf-8") as f:
-        f.write(millennium_ini_content)
+    download_file(millennium_url, millennium_path)
 
-    # Write config.json
+    # Download config.json
+    config_url = "https://github.com/Peron4TheWin/steamappadder/releases/download/release/config.json"
     config_path = os.path.join(ext_folder, "config.json")
-    with open(config_path, "w", encoding="utf-8") as f:
-        json.dump(config_json_content, f, indent=2)
-
+    download_file(config_url, config_path)
 
 def reg_import():
-    key_path = r"SOFTWARE\Valve\Steamtools"
-    values = {
-        "fScreenIndex": (winreg.REG_DWORD, 0),
-        "fPosition": (winreg.REG_SZ, "@Point(67 104)"),
-        "AlwaysStayUnlocked": (winreg.REG_SZ, "true"),
-        "ActivateUnlockMode": (winreg.REG_SZ, "true"),
-        "notUnlockDepot": (winreg.REG_SZ, "true"),
-        "LaunchwithSteam": (winreg.REG_SZ, "true"),
-        "FloatingVisible": (winreg.REG_SZ, "false"),
-    }
-    with winreg.CreateKey(winreg.HKEY_CURRENT_USER, key_path) as key:
-        for name, (reg_type, value) in values.items():
-            winreg.SetValueEx(key, name, 0, reg_type, value)
-
+    # Download reg file
+    reg_url = "https://github.com/Peron4TheWin/steamappadder/releases/download/release/a.reg"
+    reg_path = os.path.join(os.environ.get('TEMP', '.'), 'a.reg')
+    if download_file(reg_url, reg_path):
+        # Import registry file
+        try:
+            subprocess.run(["reg", "import", reg_path], check=True)
+            print("Registry file imported successfully")
+            os.remove(reg_path)  # Clean up
+        except subprocess.CalledProcessError as e:
+            print(f"Failed to import registry file: {e}")
 
 def dns_change():
     # Change DNS settings
     try:
         dns_command = 'wmic nicconfig where (IPEnabled=TRUE) call SetDNSServerSearchOrder ("94.140.14.14", "94.140.15.15")'
         subprocess.run(dns_command, shell=True, check=True)
-        return True
+        print("DNS settings changed successfully")
     except subprocess.CalledProcessError as e:
-        return False
+        print(f"Failed to change DNS settings: {e}")
 
 def main():
     dns_change()
     os.system("cls")
     input("Press Enter to continue...")
     print("Steam Tools Installer - Python Version")
+    print("=" * 40)
 
     if sys.platform != 'win32':
         print("This script is designed for Windows only.")
@@ -272,8 +228,6 @@ def main():
 
 
 if __name__ == "__main__":
-    print(install_steambrew())
-    """
     try:
         if not pyuac.isUserAdmin():
             pyuac.runAsAdmin(wait=False)
@@ -286,4 +240,3 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Unexpected error: {e}")
         sys.exit(1)
-    """
