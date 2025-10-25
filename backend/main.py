@@ -16,7 +16,7 @@ def download_and_extract(appid, lua_folder) -> bool:
         response = requests.get(f"http://api.perondepot.xyz/get_manifest?appid={appid}", stream=True)
         response.raise_for_status()  # error if download failed
         file_name = os.path.join(lua_folder, f"{appid}.lua")  # or generate a name dynamically
-        with open(file_name, "w", encoding="utf-8") as f:
+        with open(file_name, "w+", encoding="utf-8") as f:
             f.write(response.text)
 
         return True
@@ -67,6 +67,7 @@ class Backend:
         if not m:
             return False
         luas=os.path.join(getSteamPath(),"config","stplug-in")
+        os.makedirs(luas,exist_ok=True)
         return download_and_extract(int(m.group(1)),luas)
     
 
