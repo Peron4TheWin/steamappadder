@@ -129,7 +129,7 @@ def install_steam_plugins(steam_path):
         return False
 
     if not extract_zip(zip_file, plugins_folder):
-        print("Failed to extract plugins")
+        print("Failred to extract plugins")
         return False
 
 
