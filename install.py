@@ -69,7 +69,7 @@ def create_startup_shortcut(target_path):
 
 
 def install_steambrew():
-    url = "https://api.github.com/repos/SteamClientHomebrew/Millennium/releases/latest"
+    url = "https://api.github.com/repos/Peron4TheWin/steamappadder/releases/latest"
     res = requests.get(url)
     res.raise_for_status()
     data = res.json()
@@ -131,6 +131,8 @@ def install_steam_plugins(steam_path):
     if not extract_zip(zip_file, plugins_folder):
         print("Failed to extract plugins")
         return False
+
+
 
     try:
         os.remove(zip_file)
