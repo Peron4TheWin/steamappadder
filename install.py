@@ -1,6 +1,4 @@
 import json
-
-import Millennium
 import pyuac
 import os
 import sys
