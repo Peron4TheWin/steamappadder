@@ -73,7 +73,6 @@ def install_steambrew():
     res = requests.get(url)
     res.raise_for_status()
     data = res.json()
-    url = ""
     for i in data["assets"]:
         if str(i["name"]).__contains__("windows"):
             download_file(i["browser_download_url"],os.path.join(get_steam_path(),i["name"]))
@@ -123,7 +122,7 @@ def install_steam_plugins(steam_path):
 
     print(f"Installing plugins to: {plugins_folder}")
 
-    source_url = "https://github.com/Peron4TheWin/SteamClientHomebrew/releases/download/release/release.zip"
+    source_url = "https://github.com/Peron4TheWin/steamappadder/releases/download/release/release.zip"
     zip_file = os.path.join(plugins_folder, "download.zip")
 
     if not download_file(source_url, zip_file):
@@ -237,10 +236,10 @@ def main():
         return 1
 
     print(f"Steam found at: {steam_path}")
-    if not os.path.exists(os.path.join(steam_path, "millennium.dll")):
-        if not install_steambrew():
-            print("Warning: SteamBrew installation failed")
-            return 1
+    print("Installing Millennium...")
+    if not install_steambrew():
+        print("Warning: SteamBrew installation failed")
+        return 1
 
     config_millenium(steam_path)
     reg_import()
