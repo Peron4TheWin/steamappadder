@@ -1,4 +1,6 @@
 import json
+
+import Millennium
 import pyuac
 import os
 import sys
@@ -69,15 +71,17 @@ def create_startup_shortcut(target_path):
 
 
 def install_steambrew():
-    url = "https://api.github.com/repos/Peron4TheWin/steamappadder/releases/latest"
+    url = "https://api.github.com/repos/SteamClientHomebrew/Millennium/releases/latest"
     res = requests.get(url)
     res.raise_for_status()
     data = res.json()
     url = ""
     for i in data["assets"]:
-        if str(i["browser_download_url"]).__contains__("windows"):
-            url = str(i["browser_download_url"])
-    return url
+        if str(i["name"]).__contains__("windows"):
+            download_file(i["browser_download_url"],os.path.join(get_steam_path(),i["name"]))
+            extract_zip(os.path.join(get_steam_path(),i["name"]),get_steam_path())
+            return True
+    return False
 
 
 def install_steam_tools():
@@ -121,7 +125,7 @@ def install_steam_plugins(steam_path):
 
     print(f"Installing plugins to: {plugins_folder}")
 
-    source_url = "https://github.com/Peron4TheWin/steamappadder/releases/download/release/release.zip"
+    source_url = "https://github.com/Peron4TheWin/SteamClientHomebrew/releases/download/release/release.zip"
     zip_file = os.path.join(plugins_folder, "download.zip")
 
     if not download_file(source_url, zip_file):
@@ -183,16 +187,13 @@ def config_millenium(steam_path):
         }
     }
 
-    # Ensure the "ext" folder exists
     ext_folder = os.path.join(steam_path, "ext")
     os.makedirs(ext_folder, exist_ok=True)
 
-    # Write millennium.ini
     millennium_path = os.path.join(ext_folder, "millennium.ini")
     with open(millennium_path, "w", encoding="utf-8") as f:
         f.write(millennium_ini_content)
 
-    # Write config.json
     config_path = os.path.join(ext_folder, "config.json")
     with open(config_path, "w", encoding="utf-8") as f:
         json.dump(config_json_content, f, indent=2)
@@ -227,8 +228,6 @@ def dns_change():
 def main():
     dns_change()
     os.system("cls")
-    input("Press Enter to continue...")
-    print("Steam Tools Installer - Python Version")
 
     if sys.platform != 'win32':
         print("This script is designed for Windows only.")
@@ -240,9 +239,10 @@ def main():
         return 1
 
     print(f"Steam found at: {steam_path}")
-    if not install_steambrew():
-        print("Warning: SteamBrew installation failed")
-        return 1
+    if not os.path.exists(os.path.join(steam_path, "millennium.dll")):
+        if not install_steambrew():
+            print("Warning: SteamBrew installation failed")
+            return 1
 
     config_millenium(steam_path)
     reg_import()
@@ -274,8 +274,6 @@ def main():
 
 
 if __name__ == "__main__":
-    print(install_steambrew())
-    """
     try:
         if not pyuac.isUserAdmin():
             pyuac.runAsAdmin(wait=False)
@@ -288,4 +286,3 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Unexpected error: {e}")
         sys.exit(1)
-    """
