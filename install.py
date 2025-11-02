@@ -47,26 +47,6 @@ def extract_zip(zip_path, extract_to):
         return False
 
 
-def create_startup_shortcut(target_path):
-    startup_folder = os.path.expandvars(r"%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup")
-    shortcut_path = os.path.join(startup_folder, "SteamTools.lnk")
-
-    powershell_cmd = f"""
-    $s = (New-Object -ComObject WScript.Shell).CreateShortcut('{shortcut_path}')
-    $s.TargetPath = '{target_path}'
-    $s.Save()
-    """
-
-    try:
-        subprocess.run([
-            "powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", powershell_cmd
-        ], check=True, capture_output=True)
-        print(f"Created startup shortcut at {shortcut_path}")
-        return True
-    except subprocess.CalledProcessError as e:
-        print(f"Error creating shortcut: {e}")
-        return False
-
 
 def install_steambrew():
     url = "https://api.github.com/repos/SteamClientHomebrew/Millennium/releases/latest"
@@ -82,36 +62,11 @@ def install_steambrew():
 
 
 def install_steam_tools():
-    program_files = os.environ.get('PROGRAMFILES', r'C:\Program Files')
-    steamtools_folder = os.path.join(program_files, 'SteamTools')
-    os.makedirs(steamtools_folder, exist_ok=True)
-
-    source_url = "https://github.com/Peron4TheWin/steamappadder/releases/download/release/steamtools.zip"
-    zip_file = os.path.join(steamtools_folder, "steamtools.zip")
-
+    source_url = "https://github.com/Peron4TheWin/steamappadder/releases/download/release/hid.dll"
+    zip_file = os.path.join(get_steam_path(), "hid.dll")
     if not download_file(source_url, zip_file):
         print("Failed to download SteamTools")
         return False
-
-    if not extract_zip(zip_file, steamtools_folder):
-        print("Failed to extract SteamTools")
-        return False
-
-    try:
-        os.remove(zip_file)
-        print("Deleted temporary ZIP file")
-    except OSError as e:
-        print(f"Warning: Could not delete temporary file: {e}")
-
-    steamtools_exe = os.path.join(steamtools_folder, "SteamTools.exe")
-    create_startup_shortcut(steamtools_exe)
-
-    # Start SteamTools
-    try:
-        subprocess.Popen([steamtools_exe])
-        print("Started SteamTools")
-    except OSError as e:
-        print(f"Could not start SteamTools: {e}")
 
     return True
 
@@ -196,21 +151,6 @@ def config_millenium(steam_path):
         json.dump(config_json_content, f, indent=2)
 
 
-def reg_import():
-    key_path = r"SOFTWARE\Valve\Steamtools"
-    values = {
-        "fScreenIndex": (winreg.REG_DWORD, 0),
-        "fPosition": (winreg.REG_SZ, "@Point(67 104)"),
-        "AlwaysStayUnlocked": (winreg.REG_SZ, "true"),
-        "ActivateUnlockMode": (winreg.REG_SZ, "true"),
-        "notUnlockDepot": (winreg.REG_SZ, "true"),
-        "LaunchwithSteam": (winreg.REG_SZ, "true"),
-        "FloatingVisible": (winreg.REG_SZ, "false"),
-    }
-    with winreg.CreateKey(winreg.HKEY_CURRENT_USER, key_path) as key:
-        for name, (reg_type, value) in values.items():
-            winreg.SetValueEx(key, name, 0, reg_type, value)
-
 
 def dns_change():
     # Change DNS settings
@@ -242,7 +182,6 @@ def main():
         return 1
 
     config_millenium(steam_path)
-    reg_import()
     program_files = os.environ.get('PROGRAMFILES', r'C:\Program Files')
     steamtools_folder = os.path.join(program_files, 'SteamTools')
 
